@@ -1,31 +1,35 @@
-name: My Library Project CI Build
+name: Maven CI
 
-# Listen on *any* push or PR (no branch filter)
+# Trigger this workflow on every push to the main branch
 on:
-  push: {}
-  pull_request: {}
+  push:
+    branches: [ "main" ]
 
 jobs:
-  build_and_test:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # 1) Check out the repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2) Set up JDK 11 (matches your pom.xml’s <maven.compiler.source>11)
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '11'
-          distribution: 'temurin'
-          cache: 'maven'
 
-      - name: Build and test with Maven
-        run: mvn -B clean test --file pom.xml
-
-      - name: Upload Surefire Test Report
-        if: always()
-        uses: actions/upload-artifact@v4
+      # 3) Cache Maven dependencies (optional but speeds up builds)
+      - name: Cache Maven repository
+        uses: actions/cache@v3
         with:
-          name: surefire-report-${{ github.run_id }}
-          path: target/surefire-reports/
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # 4) Run Maven clean + tests
+      - name: Build and run tests
+        run: mvn --batch-mode clean test
