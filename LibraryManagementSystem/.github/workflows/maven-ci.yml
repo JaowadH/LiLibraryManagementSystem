@@ -44,3 +44,4 @@ jobs:
         with:
           name: surefire-report-${{ github.run_id }} # Creates a uniquely named artifact for each run
           path: target/surefire-reports/ # Path to where Maven Surefire plugin outputs its XML reports
+# This is a test comment to trigger a new evaluation
