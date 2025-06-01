@@ -1,22 +1,20 @@
 package com.example.library;
 
-import java.util.ArrayList; // For borrowedBooks list
-import java.util.List;    // For borrowedBooks list
+import java.util.ArrayList;
+import java.util.Collections; // <-- Add this import
+import java.util.List;
+import java.util.Objects;    // <-- Add this import
 
 /**
  * Represents a library user.
+ * Each user has a unique ID, name, and a list of books they have borrowed.
  */
 public class User {
-    private final String userId; // Unique identifier for the user
+    private final String userId;
     private final String name;
     private final List<Book> borrowedBooks;
-    public static final int MAX_BORROW_LIMIT = 3; // Class constant for borrowing limit
+    public static final int MAX_BORROW_LIMIT = 3;
 
-    /**
-     * Constructs a new User.
-     * @param userId The unique ID of the user (must not be null or empty).
-     * @param name The name of the user (must not be null or empty).
-     */
     public User(String userId, String name) {
         if (userId == null || userId.trim().isEmpty()) {
             throw new IllegalArgumentException("User ID cannot be null or empty.");
@@ -26,7 +24,7 @@ public class User {
         }
         this.userId = userId;
         this.name = name;
-        this.borrowedBooks = new ArrayList<>(); // Initialize the list
+        this.borrowedBooks = new ArrayList<>();
     }
 
     // --- Getters ---
@@ -38,5 +36,72 @@ public class User {
         return name;
     }
 
-    // More methods will be added in the next chunk
+    /**
+     * Returns an unmodifiable view of the list of borrowed books.
+     * This prevents external modification of the internal list.
+     * @return An unmodifiable list of borrowed books.
+     */
+    public List<Book> getBorrowedBooks() {
+        return Collections.unmodifiableList(borrowedBooks); // Encapsulation
+    }
+
+    /**
+     * Adds a book to the user's list of borrowed books.
+     * @param book The book to be added (must not be null).
+     * @return true if the book was added successfully, false otherwise (e.g., if borrow limit reached or book is null).
+     */
+    public boolean borrowBook(Book book) {
+        if (book == null) {
+            // Optionally, throw new IllegalArgumentException("Book to borrow cannot be null.");
+            // Or handle as per requirements, for now, just returning false
+            return false;
+        }
+        if (borrowedBooks.size() < MAX_BORROW_LIMIT && !borrowedBooks.contains(book)) {
+            borrowedBooks.add(book);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes a book from the user's list of borrowed books.
+     * @param book The book to be returned (must not be null).
+     * @return true if the book was successfully returned, false otherwise (e.g., if the user didn't borrow this book or book is null).
+     */
+    public boolean returnBook(Book book) {
+        if (book == null) {
+            return false;
+        }
+        return borrowedBooks.remove(book);
+    }
+
+    /**
+     * Checks if the user has reached their borrowing limit.
+     * @return true if the user can borrow more books, false otherwise.
+     */
+    public boolean canBorrowMore() {
+        return borrowedBooks.size() < MAX_BORROW_LIMIT;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                ", borrowedBooksCount=" + borrowedBooks.size() +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(userId, user.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
+    }
 }
